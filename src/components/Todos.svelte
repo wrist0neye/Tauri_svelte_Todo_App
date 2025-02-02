@@ -57,7 +57,7 @@
 
   function toggleCompleted(event: MouseEvent) : void {
     let {checked} = event.target as HTMLInputElement
-
+    
     $todos = $todos.map(todo => ({
       ...todo,
       completed: checked
