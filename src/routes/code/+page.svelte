@@ -13,7 +13,7 @@
 
     $: codeLines = code
         .replace(
-            /(\<\/[a-z]+\>\<[a-z]+\<|\<[a-z]+\>|\<\/[a-z]+\>)/g, // 무슨 정ㅠ식이냐
+            /(\<\/[a-z]+\>\<[a-z]+\<|\<[a-z]+\>|\<\/[a-z]+\>)/g, // 무슨 정규식이냐
             '\n'
         ).split('\n');
     $: cleanCode = codeLines.join('\n');
