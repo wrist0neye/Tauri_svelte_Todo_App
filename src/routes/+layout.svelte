@@ -1,7 +1,7 @@
 <nav>
     <a href="/">Todo</a>
     <a href="/code">Note</a>
-    <a href="/setting">Settings</a>
+    <a href="/webGPU">GL test</a>
 </nav>
 
 <slot></slot>
