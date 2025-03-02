@@ -1,8 +1,7 @@
 <script lang="ts">
-  import { Grid, GroupInstanceIdCreator } from 'ag-grid-community';
   import { onMount } from 'svelte';
   let canvas;
-  const GRID_SIZE = 32;
+  const GRID_SIZE = 16;
 
   onMount(() => {
     const GPU_check = async() => {
@@ -70,7 +69,7 @@
       const uniformBuffer = res.device.createBuffer({
         label: "Grid Uniforms",
         size: uniformArray.byteLength,
-        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
       })
 
       res.device.queue.writeBuffer(uniformBuffer, 0, uniformArray);
@@ -78,25 +77,44 @@
       const cellShaderModule = res.device.createShaderModule({
         label: 'Cell shader',
         code: `
+          struct VertexInput {
+            @location(0) pos: vec2f,
+            @builtin(instance_index) instance: u32,
+          };
+
+          struct VertexOutput{
+            @builtin(position) pos: vec4f,
+            @location(0) cell : vec2f,
+          };
+
+          struct FragInput {
+            @location(0) cell: vec2f,
+          }
+
           // At the top of the \`code\` string in the createShaderModule() call
           @group(0) @binding(0) var<uniform> grid: vec2f;
           
           @vertex
-          fn vertexMain(@location(0) pos: vec2f,
-                        @builtin(instance_index) instance: u32) -> 
-            @builtin(position) vec4f {
-            
-            let i = f32(instance);
+          fn vertexMain(input: VertexInput) -> VertexOutput {  
+            let i = f32(input.instance);
             // let cell = vec2f(i,i);
             let cell = vec2f(i % grid.x, floor(i / grid.x));
             let cellOffset = cell/grid*2;
-            let gridPos = (pos+1)/grid - 1 + cellOffset;
-            return vec4f(gridPos, 0, 1);
+            let gridPos = (input.pos+1)/grid - 1 + cellOffset;
+            //return vec4f(gridPos, 0, 1);
+
+            var output: VertexOutput;
+            output.pos = vec4f(gridPos, 0, 1);
+            output.cell = cell;
+            return output;
           }
 
+
           @fragment
-          fn fragmentMain() -> @location(0) vec4f {
-            return vec4f(1, 0, 0, 1);
+          fn fragmentMain(input: VertexOutput) -> @location(0) vec4f {
+            //return vec4f(1, 0, 0, 1);
+            let c = input.cell / grid;
+            return vec4f(c, 1-c.x, 1);
           }
         `
       })
@@ -135,9 +153,8 @@
 
       // // before pass.end()
       pass.end();
-
-      const commandBuffer = encoder.finish();
-      res.device.queue.submit([commandBuffer]);
+      
+      res.device.queue.submit([encoder.finish()]);
 
     })
   })
