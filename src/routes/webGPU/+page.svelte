@@ -1,27 +1,8 @@
 <script lang="ts">
+  import { Grid, GroupInstanceIdCreator } from 'ag-grid-community';
   import { onMount } from 'svelte';
   let canvas;
-
-  // function console_widget() {
-  //   const adapter = await navigator.gpu.requestAdapter();
-  //   const device = await adapter.requestDevice();
-  //   const context = canvas.getContext("webgpu");
-  //   const canvasFormat = navigator.gpu.getPreferredCanvasFormat();
-  //   // let canvas = document.querySelector("canvas");
-  //   context.configure({
-  //     device: device,
-  //     format: canvasFormat,
-  //   });
-  //   const encoder = device.createCommandEncoder();
-  //   const pass = encoder.beginRenderPass({
-  //   colorAttachments: [{
-  //       view: context.getCurrentTexture().createView(),
-  //       loadOp: "clear",
-  //       clearValue: { r: 0, g: 0, b: 0.4, a: 1 }, // New line
-  //       storeOp: "store",
-  //     }],
-  //   });
-  // }
+  const GRID_SIZE = 4;
 
   onMount(() => {
     const GPU_check = async() => {
@@ -53,10 +34,10 @@
         }]
       })
 
-      pass.end();
+      // pass.end();
 
-      const commandBuffer = encoder.finish();
-      res.device.queue.submit([commandBuffer]);
+      // const commandBuffer = encoder.finish();
+      // res.device.queue.submit([commandBuffer]);
 
       const vertices = new Float32Array([
         -0.8, -0.8,
@@ -85,15 +66,42 @@
         }],
       };
 
+      const uniformArray = new Float32Array([GRID_SIZE, GRID_SIZE]);
+      const uniformBuffer = res.device.createBuffer({
+        label: "Grid Uniforms",
+        size: uniformArray.byteLength,
+        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+      })
+
+      res.device.queue.writeBuffer(uniformBuffer, 0, uniformArray);
       // After encoder.beginRenderPass()
+
+      // const cellShaderModule = res.device.createShaderModule({
+      //   label: 'Cell shader',
+      //   code: `
+      //     @vertex
+      //     fn vertexMain(@location(0) pos: vec2f) ->
+      //       @builtin(position) vec4f {
+      //       return vec4f(pos, 0, 1);
+      //     }
+
+      //     @fragment
+      //     fn fragmentMain() -> @location(0) vec4f {
+      //       return vec4f(1, 0, 0, 1);
+      //     }
+      //   `
+      // });
 
       const cellShaderModule = res.device.createShaderModule({
         label: 'Cell shader',
         code: `
+          // At the top of the \`code\` string in the createShaderModule() call
+          @group(0) @binding(0) var<uniform> grid: vec2f;
+          
           @vertex
-          fn vertexMain(@location(0) pos: vec2f) ->
+          fn vertexMain(@location(0) pos: vec2f) -> 
             @builtin(position) vec4f {
-            return vec4f(pos, 0, 1);
+            return vec4f(pos / grid, 0, 1);
           }
 
           @fragment
@@ -101,8 +109,7 @@
             return vec4f(1, 0, 0, 1);
           }
         `
-      });
-
+      })
 
       const cellPipeline = res.device.createRenderPipeline({
         label: "Cell pipeline",
@@ -121,13 +128,26 @@
         }
       });
 
+      const bindGroup = res.device.createBindGroup({
+        label: "Cell renderer bind group",
+        layout: cellPipeline.getBindGroupLayout(0),
+        entries: [{
+          binding: 0,
+          resource: { buffer: uniformBuffer }
+        }],
+      })
+      
+      pass.setPipeline(cellPipeline);
+      pass.setVertexBuffer(0, vertexBuffer);
 
-      // pass.setPipeline(cellPipeline);
-      // pass.setVertexBuffer(0, vertexBuffer);
-      // pass.draw(vertices.length / 2); // 6 vertices
+      pass.setBindGroup(0, bindGroup);
+      pass.draw(vertices.length / 2);
 
       // // before pass.end()
-      // pass.end();
+      pass.end();
+
+      const commandBuffer = encoder.finish();
+      res.device.queue.submit([commandBuffer]);
 
     })
   })
