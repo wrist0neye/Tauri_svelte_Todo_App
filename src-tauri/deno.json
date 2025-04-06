@@ -1,0 +1,5 @@
+{
+  "imports": {
+    "@tauri-apps/plugin-shell": "npm:@tauri-apps/plugin-shell@~2.2.0"
+  }
+}

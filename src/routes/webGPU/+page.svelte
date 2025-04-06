@@ -77,6 +77,11 @@
       // Create an array representing the active state of each cell.
       const cellStateArray = new Uint32Array(GRID_SIZE * GRID_SIZE);
 
+      //Set each cell to a random state, then copy the JavaScript array into the storage buffer.
+      // for (let i=0; i< cellStateArray.length; i++) {
+      //   cellStateArray[i] = Math.random() > 0.6 ? 1 : 0;
+      // }
+
       // create a storage buffer to hold the cell state.
       const cellStateStorage = [
         res.device.createBuffer({
@@ -90,6 +95,8 @@
           usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
         })
       ];
+
+      // res.device.queue.writeBuffer(cellStateStorage[0], 0, cellStateArray);
 
       for (let i=0;i<cellStateArray.length;i+=3) {
         cellStateArray[i] = 1;
@@ -152,49 +159,49 @@
         `
       })
 
-      const cellPipeline = res.device.createRenderPipeline({
-        label: "Cell pipeline",
-        layout: "auto",
-        vertex: {
-          module: cellShaderModule,
-          entryPoint: "vertexMain",
-          buffers: [vertexBufferLayout]
-        },
-        fragment: {
-          module: cellShaderModule,
-          entryPoint: "fragmentMain",
-          targets: [{
-            format: canvasFormat
-          }]
-        }
-      });
+      // const cellPipeline = res.device.createRenderPipeline({
+      //   label: "Cell pipeline",
+      //   layout: "auto",
+      //   vertex: {
+      //     module: cellShaderModule,
+      //     entryPoint: "vertexMain",
+      //     buffers: [vertexBufferLayout]
+      //   },
+      //   fragment: {
+      //     module: cellShaderModule,
+      //     entryPoint: "fragmentMain",
+      //     targets: [{
+      //       format: canvasFormat
+      //     }]
+      //   }
+      // });
 
-      const bindGroups = [
-        res.device.createBindGroup({
-          label: "Cell renderer bind group",
-          layout: cellPipeline.getBindGroupLayout(0),
-          entries: [{
-            binding: 0,
-            resource: { buffer: uniformBuffer }
-          },
-          {
-            binding: 1,
-            resource: { buffer: cellStateStorage[0] }
-          }],
-        }),
-        res.device.createBindGroup({
-          label: "Cell renderer bind group",
-          layout: cellPipeline.getBindGroupLayout(0),
-          entries: [{
-            binding: 0,
-            resource: { buffer: uniformBuffer }
-          },
-          {
-            binding: 1,
-            resource: { buffer: cellStateStorage[1] }
-          }],
-        })
-      ]
+      // const bindGroups = [
+      //   res.device.createBindGroup({
+      //     label: "Cell renderer bind group",
+      //     layout: cellPipeline.getBindGroupLayout(0),
+      //     entries: [{
+      //       binding: 0,
+      //       resource: { buffer: uniformBuffer }
+      //     },
+      //     {
+      //       binding: 1,
+      //       resource: { buffer: cellStateStorage[0] }
+      //     }],
+      //   }),
+      //   res.device.createBindGroup({
+      //     label: "Cell renderer bind group",
+      //     layout: cellPipeline.getBindGroupLayout(0),
+      //     entries: [{
+      //       binding: 0,
+      //       resource: { buffer: uniformBuffer }
+      //     },
+      //     {
+      //       binding: 1,
+      //       resource: { buffer: cellStateStorage[1] }
+      //     }],
+      //   })
+      // ]
       
       // pass.setPipeline(cellPipeline);
       // pass.setVertexBuffer(0, vertexBuffer);
@@ -207,14 +214,129 @@
       
       // res.device.queue.submit([encoder.finish()]);
 
+      const WORKGROUP_SIZE = 8;
+      const simulationShaderModule = res.device.createShaderModule({
+        label: "Game of Life simulation shader",
+        code: `
+          @group(0) @binding(0) var<uniform> grid: vec2f;
+
+          @group(0) @binding(1) var<storage> cellStateIn : array<u32>;
+          @group(0) @binding(2) var<storage, read_write> cellStateOut : array<u32>;
+
+          fn cellIndex(cell: vec2u) -> u32 {
+            return cell.y * u32(grid.x) + cell.x;
+          }
+
+          @compute @workgroup_size(${WORKGROUP_SIZE}, ${WORKGROUP_SIZE})
+          fn computeMain(@builtin(global_invocation_id) cell: vec3u) {
+            if(cellStateIn[cellIndex(cell.xy)] == 1) {
+              cellStateOut[cellIndex(cell.xy)] = 0;
+            } else {
+              cellStateOut[cellIndex(cell.xy)] = 1;
+            }
+          }
+        `
+      })
+
+      const bindGroupLayout = res.device.createBindGroupLayout({
+        label: "Cell Bind Group Layout",
+        entries : [{
+          binding: 0,
+          visibility: GPUShaderStage.VERTEX | GPUShaderStage.COMPUTE,
+          buffer: {} // Grid uniform buffer
+        }, {
+          binding: 1,
+          visibility: GPUShaderStage.VERTEX | GPUShaderStage.COMPUTE,
+          buffer: {type: "read-only-storage"} // Cell state input buffer
+        }, {
+          binding: 2,
+          visibility: GPUShaderStage.COMPUTE,
+          buffer: {type: "storage"} // 
+        }]
+      })
+
+      const bindGroups = [
+        res.device.createBindGroup({
+          label: "Cell renderer bind group A",
+          layout: bindGroupLayout, // Updated Line
+          entries: [{
+            binding: 0,
+            resource: {buffer: uniformBuffer}
+          },{
+            binding: 1,
+            resource: {buffer: cellStateStorage[0]}
+          },{
+            binding: 2,
+            resource: {buffer: cellStateStorage[1]}
+          }]
+        }),
+        res.device.createBindGroup({
+          label: "Cell renderer bind group B",
+          layout: bindGroupLayout, // Updated Line
+          entries: [{
+            binding: 0,
+            resource: {buffer: uniformBuffer}
+          },{
+            binding: 1,
+            resource: {buffer: cellStateStorage[1]}
+          },{
+            binding: 2,
+            resource: {buffer: cellStateStorage[0]}
+          }]
+        })
+      ]
+
+      const pipelineLayout = res.device.createPipelineLayout({
+        label: "Cell Pipeline Layout",
+        bindGroupLayouts: [ bindGroupLayout ],
+      });
+
+      const cellPipeline = res.device.createRenderPipeline({
+        label: "Cell pipeline",
+        layout: pipelineLayout,
+        vertex : {
+          module: cellShaderModule,
+          entryPoint: "vertexMain"
+        },
+        fragment : {
+          module: cellShaderModule,
+          entryPoint: "fragmentMain",
+          targets: [{
+            format: canvasFormat
+          }]
+        }
+      })
+
+      // Create a compute pipeline that updates the game state.
+      const simulationPipeline = res.device.createComputePipeline({
+        label: "Simulation pipeline",
+        layout: pipelineLayout,
+        compute: {
+          module: simulationShaderModule,
+          entryPoint: "computeMain",
+        }
+      });
+
+
       const UPDATE_INTERVAL = 200; // 200 ms
       let step = 0;
 
       function updateGrid() {
-        step++;
-
         // Start a render pass 
         const encoder = res.device.createCommandEncoder();
+
+        const computePass = encoder.beginComputePass();
+
+        // Compute work will go here...
+        computePass.setPipeline(simulationPipeline);
+        computePass.setBindGroup(0, bindGroups[step&2]);
+
+        const workgroupCount = Math.ceil(GRID_SIZE / WORKGROUP_SIZE);
+        computePass.dispatchWorkgroups(workgroupCount, workgroupCount);
+        
+        computePass.end();
+
+        step++;
         const pass = encoder.beginRenderPass({
           colorAttachments: [{
             view: context.getCurrentTexture().createView(),
@@ -235,6 +357,7 @@
         res.device.queue.submit([encoder.finish()]);
       }
       setInterval(updateGrid, UPDATE_INTERVAL);
+
     })
   })
 </script>
