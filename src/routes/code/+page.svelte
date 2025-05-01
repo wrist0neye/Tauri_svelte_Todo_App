@@ -1,7 +1,7 @@
 <!-- https://www.codelantis.com/blog/sveltekit-monaco-editor -->
 <script lang="ts">
     import { invoke } from "@tauri-apps/api/core";
-    import {Command} from "@tauri-apps/plugin-shell";
+    // import {Command} from "@tauri-apps/plugin-shell";
     import {onDestroy, onMount} from "svelte";
     import type * as Monaco from "monaco-editor/esm/vs/editor/editor.api";
 
