@@ -123,11 +123,11 @@
         justify-content: start;
         align-items: center;
 
-        /* width: 100%; */
-        /* height: calc(100% - 40px);  */
-        width: 480px;
-        height: 600px;
+        width: 100%;
+        height: 100%;
         border: 1px dahsed gray;
+        min-width: 360px;
+        min-height: 240px;
         padding : 0;
     }
     
@@ -211,7 +211,6 @@
         flex : 1;
 
         width: 100%;
-        
     }
 
     .mainbody {
@@ -219,8 +218,12 @@
         height:100%;
         padding: 2px;
 
+        min-width: 360px;
+        min-height: 240px;
+
         color: #ccc;
         background-color: #202020;
+        resize:vertical;
         /* font-family: ; */
     }
     

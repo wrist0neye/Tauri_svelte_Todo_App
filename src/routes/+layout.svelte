@@ -6,6 +6,7 @@
     <a href="/memo">🍋memo</a>
     <a href="/calendar">🍋‍🟩calendar</a>
     <a href="/icon_space">🍌pureref</a>
+    <a href="/timer">🍉timer</a>
 </nav>
 
 <slot></slot>
