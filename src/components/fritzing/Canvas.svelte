@@ -29,7 +29,7 @@
     connections = store.connections;
   });
   
-  // 마우스 이벤트 핸들러
+  // 마우스 이벤트 핸들러 3가지
   function handleCanvasMouseDown(event) {
     // 드래그된 컴포넌트가 있으면 캔버스에 배치
     if ($draggedComponent) {
