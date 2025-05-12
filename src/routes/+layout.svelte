@@ -40,6 +40,7 @@
 
 {#if showSetting}
     <div class="setting_background"
+        role="presentation"
         onclick={handleSettingMenuClick}
         onkeydown={handleSettingMenuKeyDown}
         in:fade={{duration: 200}} out:fade={{duration: 200}}>
