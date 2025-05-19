@@ -13,3 +13,7 @@ I made basic todolist function with [Joy of Code]() Youtube Channel.
 - [ ] (Function) Calendar
 - [ ] (Function) Gantt Chart
 - [ ] (Function) Todo group / Tag 기능 추가하기
+
+
+### toy project : Fritzing
+- First, I ask on Claude how to start build program.

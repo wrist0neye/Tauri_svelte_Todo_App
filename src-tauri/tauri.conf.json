@@ -44,11 +44,28 @@
       {
         "title": "todolist-app",
         "width": 800,
-        "height": 600
+        "height": 600,
+        "resizable": true,
+        "maximizable": true,
+        "minimizable": true,
+        "closable": true,
+        "center": true,
+        "decorations": true,
+        "fullscreen": false,
+        "theme": "Light",
+        "transparent": false,
+        "alwaysOnTop": false,
+        "contentProtected": false,
+        "skipTaskbar": false,
+        "shadow": true,
+        "parent": null
       }
     ],
     "security": {
-      "csp": null
+      "csp": null,
+      "devCsp": null,
+      "freezePrototype": false,
+      "dangerousDisableAssetCspModification": false
     }
   },
   "bundle": {

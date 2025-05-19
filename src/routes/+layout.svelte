@@ -31,6 +31,7 @@
     <a href="/calendar">🍋‍🟩calendar</a>
     <a href="/icon_space">🍌pureref</a>
     <a href="/timer">🍉timer</a>
+    <a href="/webView_test">🧐Webview</a>
 </nav>
 
 <button id="setting_button" onclick={handleSettingButtonClick}>⚙️</button>

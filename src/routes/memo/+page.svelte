@@ -159,6 +159,11 @@
         cursor : pointer;
 
         transition : all 0.2s;
+        overflow: none;
+    }
+    
+    .tab_title::-webkit-scrollbar{
+        display:none;
     }
 
     .tab_title:hover {

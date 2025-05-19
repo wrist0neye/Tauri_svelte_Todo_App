@@ -139,6 +139,12 @@
 
 <style>
   /* Todos */
+  main{
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    align-items: center;
+  }
 
   .title {
     font-size: var(--font-80);
