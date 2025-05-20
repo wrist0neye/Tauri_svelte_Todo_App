@@ -1,5 +1,7 @@
 <script lang="ts">
   import WebView from "$root/components/webView/webView.svelte"
+  import  {Window} from "@tauri-apps/api/window"
+  import { Webview } from "@tauri-apps/api/webview";
 
   // State using runes
   let webviewComponent = $state();
@@ -25,7 +27,10 @@
     {url : 'https://www.google.com/webhp?igu=1', alias : "Google"},
     {url : 'https://www.naver.com', alias : "Naver"},
     {url : 'https://svelte.dev/docs/kit/introduction', alias : "Svelte"},
-    {url : 'https://example.com', alias : "Example"}
+    {url : 'https://example.com', alias : "Example"},
+    {url : 'https://chatgpt.com', alias : "chatGPT"},
+    {url : 'https://claude.ai/new', alias : "claude"},
+    {url : 'https://gemini.google.com/', alias : "gemini"}
   ]
 
   // Webview에 메시지 전송
@@ -44,7 +49,7 @@
   function handleWebViewMessage(data) {
     console.log("Received from WebView:", data);
     receivedMessages = [
-      ...receivedMessages, {
+      ...receivedMessages, { 
         data,
         timestamp : new Date().toLocaleString()
       }
@@ -53,7 +58,25 @@
 
   // URL 변경
   function changeUrl(newUrl) {
-    currentUrl = newUrl;
+    // currentUrl = newUrl;
+    let label = `Web-view-${Date.now().toString()}`
+    const appWindow = new Window("label")
+    const webview = new WebView(appWindow, label, {
+        url : newUrl,
+        width: 800,
+        height: 600,
+        decorations: true,
+        transparent: false
+      }
+    )
+    webview.once('tauri://created', function() {
+      alert(`${window.location.href}`)
+    })
+    webview.once('tauri://error', function(e){
+      // alert('error');
+      console.error("Webview openning failed...")
+      console.error(e);
+    })
   }
 
   // 웹뷰 새로고칭
