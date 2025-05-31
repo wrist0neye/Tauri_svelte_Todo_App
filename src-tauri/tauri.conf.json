@@ -58,7 +58,9 @@
         "contentProtected": false,
         "skipTaskbar": false,
         "shadow": true,
-        "parent": null
+        "parent": null,
+        "minWidth": 600,
+        "minHeight": 480
       }
     ],
     "security": {
