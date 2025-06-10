@@ -32,9 +32,14 @@
     <a href="/icon_space">🍌pureref</a>
     <a href="/timer">🍉timer</a>
     <a href="/webView_test">🧐Webview</a>
+    <a href="/widget">⛑️Widget</a>
 </nav>
 
-<button id="setting_button" onclick={handleSettingButtonClick}>⚙️</button>
+<div class="setting_tray">
+    <button class="icon" onclick={()=>{}}>🔔</button>
+    <button class="icon" onclick={handleSettingButtonClick}>⚙️</button>
+</div>
+
 
 <!-- <slot></slot> -->
 {@render children()}
@@ -55,21 +60,28 @@
 
 
 <style>
-    #setting_button{
+    .setting_tray {
         position: absolute;
         top: 10px;
         right: 10px;
+
+        display: flex;
+        flex-direction: row;
+    }
+    .icon{
         z-index: 1000;
         background-color: #000;
         color: #fff;
+
         border: none;
         padding: 5px;
         border-radius: 5px;
+        margin : 2px 3px;
     }
-    #setting_button:hover{
+    .icon:hover{
         background-color: #333;
     }
-    #setting_button:active{
+    .icon:active{
         background-color: #666;
     }
 
