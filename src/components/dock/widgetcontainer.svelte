@@ -1,3 +1,4 @@
+//widgetcontainer.svelte
 <script lang="ts">
   let {
     width,
@@ -10,7 +11,7 @@
     onDragStart,
     onDelete,
     children
-  } : {
+  }: {
     width: number;
     height: number;
     widget?: string;
@@ -94,51 +95,92 @@
     </div>
   {/if}
 </div>
+
 <style>
-  .widget_container{
-    /* width:720px;
-    height:600px; */
-    border-radius: 5px;
-    border: 2px solid rgb(7, 58, 7);
-    
-    display: flex;
-    flex-direction: column;
-    justify-content: start;
-    align-items: center;
+  .widget_container {
+    position: absolute;
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    will-change: transform; /* GPU 가속 힌트 */
+    transition: box-shadow 0.2s ease;
   }
+
+  .widget_container.selected {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3), 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .widget_container.dragging {
+    z-index: 1000;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+    transition: none; /* 드래그 중에는 트랜지션 제거 */
+  }
+
+  .widget_container.minimized {
+    height: 40px !important;
+  }
+
   .titlebar {
-    width: 100%;
-    height: 36px;
-
-    padding : 0 2px;
-    background-color: rgb(7, 58, 7);
-   
     display: flex;
-    flex-direction: row;
-    justify-content: space-between;
     align-items: center;
+    height: 40px;
+    background: linear-gradient(to bottom, #f8fafc, #f1f5f9);
+    border-bottom: 1px solid #e2e8f0;
+    padding: 0 12px;
+    cursor: move;
+    user-select: none;
   }
-  .widget_title{
+
+  .titlebar:hover {
+    background: linear-gradient(to bottom, #f1f5f9, #e2e8f0);
+  }
+
+  .widget_title {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+    pointer-events: none; /* 텍스트 선택 방지 */
+  }
+
+  .blank {
+    flex: 1;
+  }
+
+  .widget_button {
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: bold;
     margin-left: 4px;
-    color: #fff;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6b7280;
+    transition: all 0.15s ease;
   }
-  .widget_button{
-    width: 12px;
-    height: 12px;
-    margin: 0 2px;
 
-    color: #fff;
-    font-weight: 600; 
+  .widget_button:hover {
+    background: rgba(0, 0, 0, 0.1);
+    color: #374151;
   }
-  .blank{
-    flex:1;
-  }
-  .container_body{
-    width: 100%;
-    flex-grow:1;
 
-    border-radius: 5px;
-    background-color: white;
+  .widget_button.close:hover {
+    background: #ef4444;
+    color: white;
+  }
+
+  .container_body {
+    height: calc(100% - 41px); /* titlebar 높이와 border 제외 */
+    overflow: auto;
+    background: white;
   }
 
   /* 드래그 중 텍스트 선택 방지 */

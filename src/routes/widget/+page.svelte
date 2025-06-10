@@ -1,37 +1,39 @@
+// +page.svelte
 <script lang="ts">
   import WidgetContainer from "$root/components/dock/widgetcontainer.svelte"
   import Todos from "$root/components/Todos.svelte";
 
-  interface widget {
+  interface Widget {
     id: number;
-    xpos : number;
-    ypos : number;
-    width : number;
+    xpos: number;
+    ypos: number;
+    width: number;
     height: number;
-    widget : string;
-    isSelected : boolean;
+    widget: string;
+    isSelected: boolean;
   }
   
-  let widget_list : widget[] = $state([]);
+  let widget_list: Widget[] = $state([]);
   let nextId = 1;
-
+  
+  // 드래그 상태 관리
   let dragState = $state({
-    widget: null,
-    offset : {x: 0, y:0},
-    isDragging: false,
-  })
+    widget: null as Widget | null,
+    offset: { x: 0, y: 0 },
+    isDragging: false
+  });
 
   function addWidget() {
-    let newWidget : widget = {
+    let newWidget: Widget = {
       id: nextId++,
-      xpos : 40,
-      ypos : 40,
-      width : 720,
+      xpos: 40 + (widget_list.length * 30), // 겹치지 않게 약간씩 오프셋
+      ypos: 40 + (widget_list.length * 30),
+      width: 720,
       height: 600,
       widget: "./",
       isSelected: false
     }
-    widget_list = [...widget_list, newWidget]
+    widget_list = [...widget_list, newWidget];
   }
 
   function startDrag(event: MouseEvent, widget: Widget) {
@@ -98,6 +100,7 @@
   }
 </script>
 
+<!-- 전역 마우스 이벤트 리스너 -->
 <svelte:window 
   onmousemove={handleMouseMove}
   onmouseup={handleMouseUp}
@@ -107,12 +110,16 @@
   <div class="tab-container">
     <h3 class="title">| Widget Drag Test</h3>
     <button 
-      class ="add_new_button"
-      onclick={addWidget}>Add one</button>
+      class="add_new_button"
+      onclick={addWidget}>
+      Add Widget ({widget_list.length})
+    </button>
   </div>
 
-  <div class="diagram_canvas"
+  <div 
+    class="diagram_canvas"
     onclick={handleCanvasClick}>
+    
     {#each widget_list as wig (wig.id)}
       <WidgetContainer
         width={wig.width}
@@ -134,69 +141,50 @@
 </main>
 
 <style>
-  /* https://dev.to/mrwolferinc/css-graph-paper-3e1i */
-  :root {
-    --bg-color: #fff;
-    --line-color-1: #366;
-    --line-color-2: #a9a9a9;
-  }
-
-  *, *::before, *::after {
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    box-sizing: border-box;
-  }
-
-  main{
-    width: 2160px;
-    height: 1440px;
-  }
-
-  .tab-container{
+  main {
     width: 100%;
-    height: 36px;
-    /* border-radius: 8px; */
-    
-    padding: 2px 4px;
-    
+    height: 100vh;
     display: flex;
-    flex-direction: row;
-    justify-content: start;
+    flex-direction: column;
+  }
+
+  .tab-container {
+    display: flex;
+    justify-content: space-between;
     align-items: center;
-
-    background-color: #e0e0e0;
-    border-bottom: 2px double black;
+    padding: 16px;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
   }
 
-  .title{
-    margin-left : 0.4rem;
-    margin-right: 1rem;
+  .title {
+    margin: 0;
+    color: #374151;
   }
 
-  .add_new_button{
-    width: 72px;
-    height: 24px;
-    background-color: rgb(50, 214, 165);
-    border-radius: 0.4rem;
-    
-    /* font-style: bold; */
-    font-weight: 700;
-    text-align: center;
-  }
-  .add_new_button:hover{
-    background-color: rgb(44, 182, 140);
-  }
-  .add_new_button:active{
-    background-color: rgb(44, 142, 113);
+  .add_new_button {
+    padding: 8px 16px;
+    background: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
   }
 
-  .diagram_canvas{
-    width: 100%;
-    height: 100%;
-    background-color: var(--bg-color);
-    background-image: linear-gradient(var(--line-color-1) 1.5px, transparent 1.5px), linear-gradient(90deg, var(--line-color-1) 1.5px, transparent 1.5px), linear-gradient(var(--line-color-2) 1px, transparent 1px), linear-gradient(90deg, var(--line-color-2) 1px, transparent 1px);
-    background-position: -1.5px -1.5px, -1.5px -1.5px, -1px -1px, -1px -1px;
-    background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
+  .add_new_button:hover {
+    background: #2563eb;
   }
 
+  .diagram_canvas {
+    flex: 1;
+    position: relative;
+    background: #fafafa;
+    background-image: 
+      linear-gradient(to right, #e5e7eb 1px, transparent 1px),
+      linear-gradient(to bottom, #e5e7eb 1px, transparent 1px);
+    background-size: 20px 20px;
+    overflow: hidden;
+    cursor: default;
+  }
 </style>
